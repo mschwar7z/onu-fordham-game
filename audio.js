@@ -7,6 +7,9 @@ class AudioManager {
         this.clickSound = null;
         this.isPlaying = false;
         this.isAudioPaused = false;
+        this.pauseDuration = 6000; // 6 seconds in milliseconds (editable)
+        this.initialDelay = 1000; // 1 second delay before character audio starts (editable)
+        this.audioSequence = null; // Track current audio sequence
         
         // Character ID to audio file mapping
         this.characterAudioMap = {
@@ -60,7 +63,7 @@ class AudioManager {
     loadBackgroundMusic() {
         this.backgroundMusic = new Audio('static/audio/background-music.mp3');
         this.backgroundMusic.loop = true;
-        this.backgroundMusic.volume = 0.3; // Lower volume for background
+        this.backgroundMusic.volume = 0.1; // Much quieter background music
     }
     
     loadClickSound() {
@@ -70,7 +73,7 @@ class AudioManager {
     
     // Play background music
     playBackgroundMusic() {
-        if (this.backgroundMusic && !this.isPlaying) {
+        if (this.backgroundMusic) {
             this.backgroundMusic.play().catch(e => {
                 console.log('Background music play failed:', e);
             });
@@ -126,13 +129,82 @@ class AudioManager {
             return;
         }
         
-        // Play audio for the first character with available audio
-        const firstCharacter = charactersWithAudio[0];
-        const characterType = this.characterAudioMap[firstCharacter];
-        const audioFile = this.getRandomAudioFile(characterType);
+        // Add configurable delay before starting character audio sequence
+        setTimeout(() => {
+            this.playAudioSequence(charactersWithAudio);
+        }, this.initialDelay);
+    }
+    
+    // Play audio sequence with configurable pauses between lines
+    playAudioSequence(charactersWithAudio) {
+        let currentIndex = 0;
         
-        if (audioFile) {
-            this.playAudioFile(audioFile, characterType);
+        // Store the sequence for potential control
+        this.audioSequence = {
+            characters: charactersWithAudio,
+            currentIndex: 0,
+            isPlaying: true
+        };
+        
+        const playNextAudio = () => {
+            if (currentIndex >= charactersWithAudio.length || !this.audioSequence.isPlaying) {
+                console.log('Audio sequence completed');
+                this.audioSequence = null;
+                return;
+            }
+            
+            const character = charactersWithAudio[currentIndex];
+            const characterType = this.characterAudioMap[character];
+            const audioFile = this.getRandomAudioFile(characterType);
+            
+            if (audioFile) {
+                this.playAudioFile(audioFile, characterType);
+                
+                // Set up next audio after current one finishes + pause
+                this.characterAudio.addEventListener('ended', () => {
+                    if (this.audioSequence && this.audioSequence.isPlaying) {
+                        setTimeout(() => {
+                            currentIndex++;
+                            this.audioSequence.currentIndex = currentIndex;
+                            playNextAudio();
+                        }, this.pauseDuration); // Use configurable pause duration
+                    }
+                }, { once: true }); // Only listen once
+            } else {
+                // If no audio file, move to next character after pause
+                if (this.audioSequence && this.audioSequence.isPlaying) {
+                    setTimeout(() => {
+                        currentIndex++;
+                        this.audioSequence.currentIndex = currentIndex;
+                        playNextAudio();
+                    }, this.pauseDuration);
+                }
+            }
+        };
+        
+        // Start the sequence
+        playNextAudio();
+    }
+    
+    // Set pause duration between audio lines (in milliseconds)
+    setPauseDuration(durationMs) {
+        this.pauseDuration = durationMs;
+        console.log(`Pause duration set to ${durationMs}ms (${durationMs/1000}s)`);
+    }
+    
+    // Set initial delay before character audio starts (in milliseconds)
+    setInitialDelay(delayMs) {
+        this.initialDelay = delayMs;
+        console.log(`Initial delay set to ${delayMs}ms (${delayMs/1000}s)`);
+    }
+    
+    // Stop current audio sequence
+    stopAudioSequence() {
+        if (this.audioSequence) {
+            this.audioSequence.isPlaying = false;
+            this.stopCharacterAudio();
+            this.audioSequence = null;
+            console.log('Audio sequence stopped');
         }
     }
     
@@ -161,6 +233,14 @@ class AudioManager {
         }
     }
     
+    // Stop only character audio (keep background music running)
+    stopCharacterAudio() {
+        if (this.characterAudio) {
+            this.characterAudio.pause();
+            this.characterAudio = null;
+        }
+    }
+    
     // Handle play button click with audio
     handlePlayButtonClick(selectedCharacters) {
         console.log('Play button clicked with characters:', selectedCharacters);
@@ -177,14 +257,12 @@ class AudioManager {
         // Display selected characters
         this.displaySelectedCharacters();
         
-        // Play background music
+        // Play background music immediately
         this.playBackgroundMusic();
         
-        // Play character audio after a short delay
+        // Play character audio after a 1 second delay (handled in playCharacterAudio method)
         if (window.selectedCharacters && window.selectedCharacters.length > 0) {
-            setTimeout(() => {
-                this.playCharacterAudio(window.selectedCharacters);
-            }, 1000);
+            this.playCharacterAudio(window.selectedCharacters);
         }
     }
     
@@ -210,16 +288,15 @@ class AudioManager {
         const pauseButton = document.querySelector('.pause-button');
         
         if (this.isAudioPaused) {
-            // Resume audio
-            this.playBackgroundMusic();
+            // Resume character audio (background music keeps running)
             if (this.characterAudio) {
                 this.characterAudio.play().catch(e => console.log('Character audio play failed:', e));
             }
             pauseButton.textContent = 'Pause';
             this.isAudioPaused = false;
         } else {
-            // Pause audio
-            this.stopAllAudio();
+            // Pause only character audio (keep background music running)
+            this.stopCharacterAudio();
             pauseButton.textContent = 'Resume';
             this.isAudioPaused = true;
         }
@@ -247,6 +324,46 @@ window.toggleAudio = function() {
 // Make playClickSound globally available
 window.playClickSound = function() {
     audioManager.playClickSound();
+};
+
+// Make audio sequence control functions globally available
+window.setPauseDuration = function(durationMs) {
+    audioManager.setPauseDuration(durationMs);
+};
+
+window.stopAudioSequence = function() {
+    audioManager.stopAudioSequence();
+};
+
+// Example usage functions for easy testing
+window.setPauseTo3Seconds = function() {
+    audioManager.setPauseDuration(3000);
+};
+
+window.setPauseTo6Seconds = function() {
+    audioManager.setPauseDuration(6000);
+};
+
+window.setPauseTo10Seconds = function() {
+    audioManager.setPauseDuration(10000);
+};
+
+// Make initial delay control functions globally available
+window.setInitialDelay = function(delayMs) {
+    audioManager.setInitialDelay(delayMs);
+};
+
+// Example usage functions for initial delay
+window.setInitialDelayToHalfSecond = function() {
+    audioManager.setInitialDelay(500);
+};
+
+window.setInitialDelayTo1Second = function() {
+    audioManager.setInitialDelay(1000);
+};
+
+window.setInitialDelayTo2Seconds = function() {
+    audioManager.setInitialDelay(2000);
 };
 
 // Export for use in other files
