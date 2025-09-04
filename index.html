@@ -6,6 +6,7 @@
     <title>ONU Fordham Game</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="audio.js"></script>
 
     <script>
     let selectedCharacters = [];
@@ -13,7 +14,12 @@
     let timeLeft = 0;
 
     function toggleCharacter(card, characterName) {
-        const characterId = card.getAttribute('data-character') || characterName;
+        const characterId = card.getAttribute('id') || card.getAttribute('data-character') || characterName;
+        
+        // Play click sound
+        if (typeof playClickSound === 'function') {
+            playClickSound();
+        }
         
         if (card.classList.contains('selected')) {
             // Deselect
@@ -53,8 +59,26 @@
         const count = selectedCharacters.length;
         
         if (count > 0) {
-            // Create and submit form for game.php
+            // Play audio for selected characters
+            playGameWithAudio();
+            
+            // Add selected characters to the form
             const form = document.getElementById('gameForm');
+            
+            // Clear any existing hidden inputs
+            const existingInputs = form.querySelectorAll('input[name="selectedCharacters[]"]');
+            existingInputs.forEach(input => input.remove());
+            
+            // Add selected characters as hidden inputs
+            selectedCharacters.forEach(character => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'selectedCharacters[]';
+                input.value = character;
+                form.appendChild(input);
+            });
+            
+            // Submit form to game.php
             form.submit();
         } else {
             // Navigate to the timer page
@@ -115,102 +139,119 @@
             <div class="character-grid">
                 <div class="character-container">
                     <div class="character-card" 
+                         id="oracle-card"
                          data-character="oracle" 
                          onclick="toggleCharacter(this, 'oracle')"
                          style="background-image: url('static/images/characters/shanzeh.png');">
                         <p class="character-name">Oracle</p>
                     </div>
                     <div class="character-card" 
+                         id="doppelganger-card"
                          data-character="doppelganger" 
                          onclick="toggleCharacter(this, 'Doppelganger')"
                          style="background-image: url('static/images/characters/julia.png');">
                         <p class="character-name">Doppelgänger</p>
                     </div>
                     <div class="character-card" 
+                         id="werewolf1-card"
                          data-character="werewolf1" 
                          onclick="toggleCharacter(this, 'AndyWerewolf')"
                          style="background-image: url('static/images/characters/andy.png');">
                         <p class="character-name">Werewolf</p>
                     </div>
                     <div class="character-card" 
+                         id="werewolf2-card"
                          data-character="werewolf2" 
                          onclick="toggleCharacter(this, 'AndyWerewolf')"
                          style="background-image: url('static/images/characters/andy.png');">
                         <p class="character-name">Werewolf</p>
                     </div>
                     <div class="character-card" 
+                         id="minion-card"
                          data-character="minion" 
                          onclick="toggleCharacter(this, 'minion')"
                          style="background-image: url('static/images/characters/sofia.png');">
                         <p class="character-name">Minion</p>
                     </div>
                     <div class="character-card" 
+                         id="seer-card"
                          data-character="seer" 
                          onclick="toggleCharacter(this, 'AngieSeer')"
                          style="background-image: url('static/images/characters/angie.png');">
                         <p class="character-name">Seer</p>
                     </div>
                     <div class="character-card" 
+                         id="robber-card"
                          data-character="robber" 
                          onclick="toggleCharacter(this, 'robber')"
                          style="background-image: url('static/images/characters/charlie.png');">
                         <p class="character-name">Robber</p>
                     </div>
                     <div class="character-card" 
+                         id="troublemaker-card"
                          data-character="troublemaker" 
                          onclick="toggleCharacter(this, 'troublemaker')"
                          style="background-image: url('static/images/characters/sam.png');">
                         <p class="character-name">Troublemaker</p>
                     </div>
                     <div class="character-card" 
+                         id="drunk-card"
                          data-character="drunk" 
                          onclick="toggleCharacter(this, 'drunk')"
                          style="background-image: url('static/images/characters/ethan.png');">
                         <p class="character-name">Drunk</p>
                     </div>
                     <div class="character-card" 
+                         id="insomniac-card"
                          data-character="insomniac" 
                          onclick="toggleCharacter(this, 'insomniac')"
                          style="background-image: url('static/images/characters/luke.png');">
                         <p class="character-name">Insomniac</p>
                     </div>
                     <div class="character-card" 
+                         id="revealer-card"
                          data-character="Revealer" 
                          onclick="toggleCharacter(this, 'revealer')"
                          style="background-image: url('static/images/characters/mia.png');">
                         <p class="character-name">Revealer</p>
                     </div>
                     <div class="character-card" 
+                         id="mortician-card"
                          data-character="mortician" 
                          onclick="toggleCharacter(this, 'mortician')"
                          style="background-image: url('static/images/characters/quinn.png');">
                         <p class="character-name">Mortician</p>
                     </div>
                     <div class="character-card" 
+                         id="villager1-card"
                          data-character="villager1" 
                          onclick="toggleCharacter(this, 'villager')"
                          style="background-image: url('static/images/characters/ika.png');">
                         <p class="character-name">Villager</p>
                     </div>
                     <div class="character-card" 
+                         id="villager2-card"
                          data-character="villager2" 
                          onclick="toggleCharacter(this, 'villager')"
                          style="background-image: url('static/images/characters/ika.png');">
                         <p class="character-name">Villager</p>
                     </div>
                     <div class="character-card" 
+                         id="villager3-card"
                          data-character="villager3" 
                          onclick="toggleCharacter(this, 'villager')"
                          style="background-image: url('static/images/characters/ika.png');">
                         <p class="character-name">Villager</p>
                     </div>
                     <div class="character-card" 
+                         id="hunter-card"
                          data-character="hunter" 
                          onclick="toggleCharacter(this, 'hunter')"
                          style="background-image: url('static/images/characters/dani.png');">
                         <p class="character-name">Hunter</p>
                     </div>
                     <div class="character-card" 
+                         id="tanner-card"
                          data-character="tanner" 
                          onclick="toggleCharacter(this, 'tanner')"
                          style="background-image: url('static/images/characters/shah.png');">

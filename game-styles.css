@@ -220,3 +220,49 @@ body {
         font-size: 1rem;
     }
 }
+
+/* Character items styling */
+.character-item {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    padding: 10px 15px;
+    margin: 5px 0;
+    font-size: 1rem;
+    text-transform: capitalize;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.character-item:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-2px);
+}
+
+/* Character audio button styling */
+.character-audio-button {
+    background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 0 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.character-audio-button:hover {
+    background: linear-gradient(45deg, #ff5252, #ff7979);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+}
+
+.character-audio-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+}

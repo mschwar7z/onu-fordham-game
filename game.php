@@ -4,8 +4,11 @@ session_start();
 
 // Handle the form submission from the Play button
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // You can add your game logic here
-    // For example, initialize game state, redirect to game page, etc.
+    // Get selected characters from the form (if any)
+    $selectedCharacters = isset($_POST['selectedCharacters']) ? $_POST['selectedCharacters'] : [];
+    
+    // Store selected characters in session for use in the game
+    $_SESSION['selectedCharacters'] = $selectedCharacters;
     
     // For now, we'll just show the game page
     ?>
@@ -16,6 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>ONU Fordham Game</title>
         <link rel="stylesheet" href="game-styles.css">
+        <script src="audio.js"></script>
     </head>
     <body>
         <div class="background-container">
@@ -46,8 +50,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <p>The game is now running. Audio is playing in the background.</p>
                 
                 <div class="game-info">
+                    <h2>Selected Characters</h2>
+                    <div id="selectedCharactersList">
+                        <!-- Selected characters will be displayed here -->
+                    </div>
+                </div>
+                
+                <div class="game-info">
                     <h2>Game Status</h2>
-                    <p>Background music and ambient sounds are playing automatically.</p>
+                    <p>Background music and character audio are playing automatically.</p>
                     <p>You can add more game content here.</p>
                 </div>
                 
@@ -58,112 +69,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
         
+        <!-- Pass selected characters from PHP to JavaScript -->
         <script>
-        // Audio management for background audio
-        let audioElements = [];
-        let isAudioPaused = false;
+        // Get selected characters from PHP and make them globally available
+        window.selectedCharacters = <?php echo json_encode($selectedCharacters); ?>;
+        </script>
         
+        <script>
+        // Initialize game when page loads
         document.addEventListener('DOMContentLoaded', function() {
-            // Get all audio elements
-            audioElements = [
-                document.getElementById('mainAudio'),
-                document.getElementById('ambientAudio'),
-                document.getElementById('sfxAudio')
-            ];
-            
-            // Set volumes for different audio tracks
-            const mainAudio = document.getElementById('mainAudio');
-            const ambientAudio = document.getElementById('ambientAudio');
-            const sfxAudio = document.getElementById('sfxAudio');
-            
-            if (mainAudio) {
-                mainAudio.volume = 0.6; // Main background music at 60%
+            // Initialize the game with selected characters
+            if (typeof audioManager !== 'undefined') {
+                audioManager.initializeGame();
             }
-            
-            if (ambientAudio) {
-                ambientAudio.volume = 0.4; // Ambient sounds at 40%
-            }
-            
-            if (sfxAudio) {
-                sfxAudio.volume = 0.8; // Sound effects at 80%
-            }
-            
-            // Function to start all background audio
-            function startBackgroundAudio() {
-                audioElements.forEach(audio => {
-                    if (audio && audio.readyState >= 2) { // HAVE_CURRENT_DATA
-                        audio.play().catch(e => console.log('Audio play failed:', e));
-                    }
-                });
-            }
-            
-            // Function to stop all audio
-            function stopAllAudio() {
-                audioElements.forEach(audio => {
-                    if (audio) {
-                        audio.pause();
-                        audio.currentTime = 0;
-                    }
-                });
-            }
-            
-            // Function to pause/resume all audio
-            window.toggleAudio = function() {
-                const pauseButton = document.querySelector('.pause-button');
-                
-                if (isAudioPaused) {
-                    // Resume audio
-                    audioElements.forEach(audio => {
-                        if (audio) {
-                            audio.play().catch(e => console.log('Audio play failed:', e));
-                        }
-                    });
-                    pauseButton.textContent = 'Pause Audio';
-                    isAudioPaused = false;
-                } else {
-                    // Pause audio
-                    audioElements.forEach(audio => {
-                        if (audio) {
-                            audio.pause();
-                        }
-                    });
-                    pauseButton.textContent = 'Resume Audio';
-                    isAudioPaused = true;
-                }
-            };
-            
-            // Auto-start background audio when user interacts with the page
-            let hasInteracted = false;
-            
-            function startAudioOnInteraction() {
-                if (!hasInteracted) {
-                    hasInteracted = true;
-                    startBackgroundAudio();
-                }
-            }
-            
-            // Listen for user interactions to start audio
-            document.addEventListener('click', startAudioOnInteraction);
-            document.addEventListener('touchstart', startAudioOnInteraction);
-            document.addEventListener('keydown', startAudioOnInteraction);
-            
-            // Start audio immediately if page loads with user already having interacted
-            if (document.visibilityState === 'visible') {
-                // Small delay to ensure audio is loaded
-                setTimeout(() => {
-                    startBackgroundAudio();
-                }, 1000);
-            }
-            
-            // Handle page visibility changes
-            document.addEventListener('visibilitychange', function() {
-                if (document.visibilityState === 'visible') {
-                    startBackgroundAudio();
-                } else {
-                    // Optionally pause audio when page is hidden
-                    // stopAllAudio();
-                }
-            });
         });
         </script>
     </body>
