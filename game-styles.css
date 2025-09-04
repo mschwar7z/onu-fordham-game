@@ -1,0 +1,222 @@
+@font-face {
+    font-family: 'Josefin Sans';
+    src: url('static/fonts/JosefinSans-VariableFont_wght.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Josefin Sans', 'Eurostile Bold Extended', 'Arial Black', 'Helvetica Black', sans-serif;
+    background: #1a1a1a;
+    color: #ffffff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.background-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+}
+
+.background-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    z-index: 1;
+}
+
+.container {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.content {
+    text-align: center;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 40px;
+    max-width: 600px;
+    width: 100%;
+}
+
+.content h1 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    font-weight: bold;
+    font-family: 'Josefin Sans', 'Eurostile Bold Extended', 'Arial Black', 'Helvetica Black', sans-serif;
+    color: #ff6b6b;
+    text-transform: uppercase;
+}
+
+.content p {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+    font-family: 'Josefin Sans', 'Eurostile Bold Extended', 'Arial Black', 'Helvetica Black', sans-serif;
+    text-transform: uppercase;
+}
+
+.game-info {
+    margin: 30px 0;
+    text-align: left;
+}
+
+.game-info h2 {
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    color: #ff6b6b;
+    text-align: center;
+    font-family: 'Josefin Sans', 'Eurostile Bold Extended', 'Arial Black', 'Helvetica Black', sans-serif;
+    text-transform: uppercase;
+}
+
+.game-info p {
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+    line-height: 1.6;
+    font-family: 'Josefin Sans', 'Eurostile Bold Extended', 'Arial Black', 'Helvetica Black', sans-serif;
+    text-transform: uppercase;
+}
+
+.button-container {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.pause-button {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.pause-button:hover {
+    background: rgba(255, 255, 255, 0.35);
+    border-color: rgba(255, 255, 255, 0.7);
+    transform: translateY(-2px);
+}
+
+.back-button {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.back-button:hover {
+    background: rgba(255, 255, 255, 0.35);
+    border-color: rgba(255, 255, 255, 0.7);
+    transform: translateY(-2px);
+    color: white;
+    text-decoration: none;
+}
+
+/* Logo Styles */
+.logo-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 0;
+    margin-top: 10px;
+}
+
+.logo-image {
+    max-width: 500px;
+    max-height: 250px;
+    object-fit: contain;
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.8));
+}
+
+/* Responsive logo sizing */
+@media (max-width: 768px) {
+    .logo-image {
+        max-width: 350px;
+        max-height: 150px;
+    }
+}
+
+@media (max-width: 480px) {
+    .logo-image {
+        max-width: 300px;
+        max-height: 120px;
+    }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .content {
+        padding: 30px 20px;
+        margin: 20px;
+    }
+    
+    .content h1 {
+        font-size: 2rem;
+    }
+    
+    .content p {
+        font-size: 1rem;
+    }
+    
+    .game-info h2 {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .content {
+        padding: 20px 15px;
+    }
+    
+    .content h1 {
+        font-size: 1.8rem;
+    }
+    
+    .game-info p {
+        font-size: 1rem;
+    }
+}

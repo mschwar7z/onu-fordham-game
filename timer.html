@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ONU Fordham Timer</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="timer.js"></script>
+</head>
+<body>
+    <!-- Timer Page -->
+    <div class="background-container">
+        <img src="static/images/backgrounds/background.png" alt="Background" class="background-image">
+   
+        <div class="container">
+            <!-- Logo Section -->
+            <div class="logo-container">
+                <img src="static/images/backgrounds/logo.png" alt="Logo" class="logo-image">
+            </div>
+
+            <!-- Timer Section -->
+            <div class="timer-container">
+                <div class="timer-header">
+                    <h1 class="timer-title">TIME</h1>
+                    <p class="timer-subtitle">REMAINING BEFORE VOTE</p>
+                </div>
+                
+                <div class="timer-display" id="timerDisplay">05:00</div>
+                
+                <div class="timer-controls">
+                    <button class="timer-button" onclick="stopTimer()">Stop</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

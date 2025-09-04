@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ONU Fordham Game</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+
+    <script>
+    let selectedCharacters = [];
+    let timerInterval;
+    let timeLeft = 0;
+
+    function toggleCharacter(card, characterName) {
+        const characterId = card.getAttribute('data-character') || characterName;
+        
+        if (card.classList.contains('selected')) {
+            // Deselect
+            card.classList.remove('selected');
+            selectedCharacters = selectedCharacters.filter(char => char !== characterId);
+        } else {
+            // Select
+            card.classList.add('selected');
+            selectedCharacters.push(characterId);
+        }
+        
+        // Update play button text and state
+        updatePlayButton();
+    }
+
+    function updatePlayButton() {
+        const playButton = document.getElementById('playButton');
+        const characterCount = document.getElementById('characterCount');
+        const buttonText = document.getElementById('buttonText');
+        const count = selectedCharacters.length;
+        
+        // Update the count text and button text based on selection
+        if (count > 0) {
+            buttonText.textContent = 'Play';
+            characterCount.textContent = ' ' + count; // Add space before number
+            playButton.disabled = false;
+            playButton.style.opacity = '1';
+        } else {
+            buttonText.textContent = 'Timer';
+            characterCount.textContent = ''; // Show just "Timer"
+            playButton.disabled = false; // Changed from true to false so timer button is clickable
+            playButton.style.opacity = '1'; // Changed from 0.7 to 1
+        }
+    }
+
+    function handleButtonClick() {
+        const count = selectedCharacters.length;
+        
+        if (count > 0) {
+            // Create and submit form for game.php
+            const form = document.getElementById('gameForm');
+            form.submit();
+        } else {
+            // Navigate to the timer page
+            window.location.href = 'timer.html';
+        }
+    }
+
+    // Loading screen functionality
+    function hideLoadingScreen() {
+        const loadingScreen = document.getElementById('loadingScreen');
+        const mainContent = document.getElementById('mainContent');
+        
+        loadingScreen.style.opacity = '0';
+        setTimeout(() => {
+            loadingScreen.style.display = 'none';
+            mainContent.style.display = 'flex';
+        }, 500); // Wait for fade out animation
+    }
+
+    // Initialize button state and loading screen on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        updatePlayButton();
+        
+        // Check if we should skip the loading screen (when coming back from game)
+        if (window.location.hash === '#skip-loading') {
+            // Skip loading screen and show main content immediately
+            const loadingScreen = document.getElementById('loadingScreen');
+            const mainContent = document.getElementById('mainContent');
+            
+            loadingScreen.style.display = 'none';
+            mainContent.style.display = 'flex';
+            
+            // Remove the hash from URL
+            history.replaceState(null, null, window.location.pathname);
+        } else {
+            // Hide loading screen after 3 seconds (normal behavior)
+            setTimeout(hideLoadingScreen, 3000);
+        }
+    });
+    </script>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <img src="static/images/backgrounds/loading.png" alt="Loading" class="loading-image">
+    </div>
+
+    <!-- Main Content -->
+    <div id="mainContent" class="background-container" style="display: none;">
+        <img src="static/images/backgrounds/background.png" alt="Background" class="background-image">
+   
+        <div class="container">
+            <!-- Logo Section -->
+            <div class="logo-container">
+                <img src="static/images/backgrounds/logo.png" alt="Logo" class="logo-image">
+            </div>
+
+            <div class="character-grid">
+                <div class="character-container">
+                    <div class="character-card" 
+                         data-character="oracle" 
+                         onclick="toggleCharacter(this, 'oracle')"
+                         style="background-image: url('static/images/characters/shanzeh.png');">
+                        <p class="character-name">Oracle</p>
+                    </div>
+                    <div class="character-card" 
+                         data-character="doppelganger" 
+                         onclick="toggleCharacter(this, 'Doppelganger')"
+                         style="background-image: url('static/images/characters/julia.png');">
+                        <p class="character-name">Doppelgänger</p>
+                    </div>
+                    <div class="character-card" 
+                         data-character="werewolf1" 
+                         onclick="toggleCharacter(this, 'AndyWerewolf')"
+                         style="background-image: url('static/images/characters/andy.png');">
+                        <p class="character-name">Werewolf</p>
+                    </div>
+                    <div class="character-card" 
+                         data-character="werewolf2" 
+                         onclick="toggleCharacter(this, 'AndyWerewolf')"
+                         style="background-image: url('static/images/characters/andy.png');">
+                        <p class="character-name">Werewolf</p>
+                    </div>
+                    <div class="character-card" 
+                         data-character="minion" 
+                         onclick="toggleCharacter(this, 'minion')"
+                         style="background-image: url('static/images/characters/sofia.png');">
+                        <p class="character-name">Minion</p>
+                    </div>
+                    <div class="character-card" 
+                         data-character="seer" 
+                         onclick="toggleCharacter(this, 'AngieSeer')"
+                         style="background-image: url('static/images/characters/angie.png');">
+                        <p class="character-name">Seer</p>
+                    </div>
+                    <div class="character-card" 
+                         data-character="robber" 
+                         onclick="toggleCharacter(this, 'robber')"
+                         style="background-image: url('static/images/characters/charlie.png');">
+                        <p class="character-name">Robber</p>
+                    </div>
+                    <div class="character-card" 
+                         data-character="troublemaker" 
+                         onclick="toggleCharacter(this, 'troublemaker')"
+                         style="background-image: url('static/images/characters/sam.png');">
+                        <p class="character-name">Troublemaker</p>
+                    </div>
+                    <div class="character-card" 
+                         data-character="drunk" 
+                         onclick="toggleCharacter(this, 'drunk')"
+                         style="background-image: url('static/images/characters/ethan.png');">
+                        <p class="character-name">Drunk</p>
+                    </div>
+                    <div class="character-card" 
+                         data-character="insomniac" 
+                         onclick="toggleCharacter(this, 'insomniac')"
+                         style="background-image: url('static/images/characters/luke.png');">
+                        <p class="character-name">Insomniac</p>
+                    </div>
+                    <div class="character-card" 
+                         data-character="Revealer" 
+                         onclick="toggleCharacter(this, 'revealer')"
+                         style="background-image: url('static/images/characters/mia.png');">
+                        <p class="character-name">Revealer</p>
+                    </div>
+                    <div class="character-card" 
+                         data-character="mortician" 
+                         onclick="toggleCharacter(this, 'mortician')"
+                         style="background-image: url('static/images/characters/quinn.png');">
+                        <p class="character-name">Mortician</p>
+                    </div>
+                    <div class="character-card" 
+                         data-character="villager1" 
+                         onclick="toggleCharacter(this, 'villager')"
+                         style="background-image: url('static/images/characters/ika.png');">
+                        <p class="character-name">Villager</p>
+                    </div>
+                    <div class="character-card" 
+                         data-character="villager2" 
+                         onclick="toggleCharacter(this, 'villager')"
+                         style="background-image: url('static/images/characters/ika.png');">
+                        <p class="character-name">Villager</p>
+                    </div>
+                    <div class="character-card" 
+                         data-character="villager3" 
+                         onclick="toggleCharacter(this, 'villager')"
+                         style="background-image: url('static/images/characters/ika.png');">
+                        <p class="character-name">Villager</p>
+                    </div>
+                    <div class="character-card" 
+                         data-character="hunter" 
+                         onclick="toggleCharacter(this, 'hunter')"
+                         style="background-image: url('static/images/characters/dani.png');">
+                        <p class="character-name">Hunter</p>
+                    </div>
+                    <div class="character-card" 
+                         data-character="tanner" 
+                         onclick="toggleCharacter(this, 'tanner')"
+                         style="background-image: url('static/images/characters/shah.png');">
+                        <p class="character-name">Tanner</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="play-button-container">
+                <form action="game.php" method="post" id="gameForm" style="display: none;">
+                    <!-- Hidden form for game submission -->
+                </form>
+                <button type="button" class="play-button" id="playButton" onclick="handleButtonClick()">
+                    <span id="buttonText">Timer</span><span id="characterCount"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 
