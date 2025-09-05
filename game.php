@@ -46,9 +46,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             
             <div class="content">
-                <h1>Game Started!</h1>
-                <p>The game is now running. Audio is playing in the background.</p>
-                
                 <div class="game-info">
                     <h2>Selected Characters</h2>
                     <div id="selectedCharactersList">
@@ -73,6 +70,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <script>
         // Get selected characters from PHP and make them globally available
         window.selectedCharacters = <?php echo json_encode($selectedCharacters); ?>;
+        
+        // Save selected characters to localStorage for persistence
+        if (window.selectedCharacters && window.selectedCharacters.length > 0) {
+            localStorage.setItem('selectedCharacters', JSON.stringify(window.selectedCharacters));
+        }
         </script>
         
         <script>

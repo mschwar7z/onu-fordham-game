@@ -113,6 +113,10 @@ class AudioManager {
                 'static/audio/Mia-Revealer/revealer_line_1.mp3',
                 'static/audio/Mia-Revealer/revealer_line_2.mp3'
             ],
+            'Angie-Seer': [
+                'static/audio/Angie-Seer/seer_line_1.mp3',
+                'static/audio/Angie-Seer/seer_line_2.mp3'
+            ],
             'Quinn-Mortician': [
                 'static/audio/Quinn-Mortician/mortician_line_1.mp3',
                 'static/audio/Quinn-Mortician/mortician_line_2.mp3',
@@ -148,7 +152,7 @@ class AudioManager {
     
     loadAnnouncerAudio() {
         this.announcerAudio = new Audio('static/audio/Shah-Announcer/shah_line_1.mp3');
-        this.announcerAudio.volume = 0.9; // Announcer volume (louder than other audio)
+        this.announcerAudio.volume = 1.0; // Maximum volume for announcer
     }
     
     loadClickSound() {
@@ -231,11 +235,7 @@ class AudioManager {
     async handleOracleYesNo(lineNumber) {
         return new Promise((resolve) => {
             this.oracleUserChoice = null; // Reset choice
-            if (lineNumber === 5) {
-                this.showOracleYesYesInput(lineNumber, resolve);
-            } else {
-                this.showOracleYesNoInput(lineNumber, resolve);
-            }
+            this.showOracleYesNoInput(lineNumber, resolve);
         });
     }
     
@@ -323,72 +323,6 @@ class AudioManager {
         });
     }
     
-    // Show Oracle Yes/Yes input dialog (for line 5)
-    showOracleYesYesInput(lineNumber, callback) {
-        // Create modal overlay
-        const overlay = document.createElement('div');
-        overlay.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        `;
-        
-        // Create modal content
-        const modal = document.createElement('div');
-        modal.style.cssText = `
-            background: #1a1a1a;
-            border: 2px solid #ff6b35;
-            border-radius: 10px;
-            padding: 30px;
-            text-align: center;
-            color: white;
-            font-family: 'Josefin Sans', sans-serif;
-            max-width: 400px;
-            width: 90%;
-        `;
-        
-        modal.innerHTML = `
-            <h2 style="color: #ff6b35; margin-bottom: 20px;">Oracle's Question</h2>
-            <p style="margin-bottom: 30px;">The Oracle has asked a question. What is your answer?</p>
-            <div style="display: flex; gap: 20px; justify-content: center;">
-                <button id="oracleYes1" style="background: linear-gradient(45deg, #4CAF50, #45a049);
-                        color: white; border: none; padding: 15px 30px; border-radius: 5px; 
-                        font-size: 18px; cursor: pointer; min-width: 100px;">
-                    YES
-                </button>
-                <button id="oracleYes2" style="background: linear-gradient(45deg, #2196F3, #1976D2);
-                        color: white; border: none; padding: 15px 30px; border-radius: 5px; 
-                        font-size: 18px; cursor: pointer; min-width: 100px;">
-                    YES
-                </button>
-            </div>
-        `;
-        
-        overlay.appendChild(modal);
-        document.body.appendChild(overlay);
-        
-        // Handle first Yes button
-        document.getElementById('oracleYes1').onclick = () => {
-            this.oracleUserChoice = 'yes1';
-            document.body.removeChild(overlay);
-            callback();
-        };
-        
-        // Handle second Yes button
-        document.getElementById('oracleYes2').onclick = () => {
-            this.oracleUserChoice = 'yes2';
-            document.body.removeChild(overlay);
-            callback();
-        };
-    }
-    
     // Show Oracle Yes/No input dialog
     showOracleYesNoInput(lineNumber, callback) {
         // Create modal overlay
@@ -468,9 +402,8 @@ class AudioManager {
     // Get Oracle follow-up line based on Yes/No choice
     getOracleYesNoFollowUpLine() {
         if (this.oracleSelectedLine === 5) {
-            // Line 5: 50/50 probability between line 6 and 7 (random, not tied to user choice)
-            const random = Math.random();
-            return random < 0.5 ? 6 : 7;
+            // Line 5: Yes leads to line 8, No leads to line 7
+            return this.oracleUserChoice === 'yes' ? 8 : 7;
         } else if (this.oracleSelectedLine === 8) {
             // Line 8: Yes leads to line 9, No leads to line 14
             return this.oracleUserChoice === 'yes' ? 9 : 14;
@@ -484,6 +417,45 @@ class AudioManager {
     // Check if Oracle needs line 13 at the end (always true for Oracle)
     needsOracleLine13() {
         return this.oracleSelectedLine === 2 || this.oracleSelectedLine === 5 || this.oracleSelectedLine === 8 || this.oracleSelectedLine === 10;
+    }
+    
+    // Get Doppelganger conditional lines based on other characters
+    getDoppelgangerConditionalLines(selectedCharacters) {
+        const conditionalLines = [];
+        
+        // Check for Insomniac
+        if (selectedCharacters.includes('insomniac-card')) {
+            conditionalLines.push({
+                type: 'doppelganger_conditional',
+                audioFile: 'static/audio/Julia-Doppelganger/doppelganger_line_5.mp3',
+                pauseAfter: 12000, // 12 second pause
+                followUp: 'static/audio/Julia-Doppelganger/doppelganger_line_4.mp3'
+            });
+        }
+        
+        // Check for Revealer
+        if (selectedCharacters.includes('revealer-card')) {
+            conditionalLines.push({
+                type: 'doppelganger_conditional',
+                audioFile: 'static/audio/Julia-Doppelganger/doppelganger_line_6.mp3',
+                pauseAfter: 12000, // 12 second pause
+                followUp: 'static/audio/Julia-Doppelganger/doppelganger_line_4.mp3'
+            });
+        }
+        
+        // Check for Mortician
+        if (selectedCharacters.includes('mortician-card')) {
+            // Random line from 8, 9, 10, or 11 (same logic as Mortician)
+            const randomLine = Math.floor(Math.random() * 4) + 8; // Random number 8, 9, 10, or 11
+            conditionalLines.push({
+                type: 'doppelganger_conditional',
+                audioFile: `static/audio/Julia-Doppelganger/doppelganger_line_${randomLine}.mp3`,
+                pauseAfter: 0, // No pause for Mortician logic
+                followUp: 'static/audio/Julia-Doppelganger/doppelganger_line_4.mp3'
+            });
+        }
+        
+        return conditionalLines;
     }
 
     // Get specific line sequence for characters with multiple lines
@@ -513,20 +485,18 @@ class AudioManager {
                 `static/audio/Shanzeh-Oracle/oracle_line_${selectedLine}.mp3`
             ];
         } else if (characterType === 'Julia-Doppelganger') {
-            // Doppelganger plays all 11 lines in order
-            return [
+            // Doppelganger: line 1, 12s pause, then lines 2, 3, 4
+            // Additional lines are conditional based on other characters
+            const baseSequence = [
                 'static/audio/Julia-Doppelganger/doppelganger_line_1.mp3',
                 'static/audio/Julia-Doppelganger/doppelganger_line_2.mp3',
                 'static/audio/Julia-Doppelganger/doppelganger_line_3.mp3',
-                'static/audio/Julia-Doppelganger/doppelganger_line_4.mp3',
-                'static/audio/Julia-Doppelganger/doppelganger_line_5.mp3',
-                'static/audio/Julia-Doppelganger/doppelganger_line_6.mp3',
-                'static/audio/Julia-Doppelganger/doppelganger_line_7.mp3',
-                'static/audio/Julia-Doppelganger/doppelganger_line_8.mp3',
-                'static/audio/Julia-Doppelganger/doppelganger_line_9.mp3',
-                'static/audio/Julia-Doppelganger/doppelganger_line_10.mp3',
-                'static/audio/Julia-Doppelganger/doppelganger_line_11.mp3'
+                'static/audio/Julia-Doppelganger/doppelganger_line_4.mp3'
             ];
+            
+            // Store the base sequence for conditional logic
+            this.doppelgangerBaseSequence = baseSequence;
+            return baseSequence;
         } else if (characterType === 'Quinn-Mortician') {
             // Mortician: line 1 always, then one random line from 2-5 (25% each), then line 6 always
             const randomLine = Math.floor(Math.random() * 4) + 2; // Random number 2, 3, 4, or 5
@@ -551,19 +521,30 @@ class AudioManager {
             return;
         }
         
-        // Find characters with available audio
+        // Find characters with available audio and deduplicate by character type
         const charactersWithAudio = selectedCharacters.filter(charId => {
             const characterType = this.characterAudioMap[charId];
             return characterType && this.audioFiles[characterType];
         });
         
-        if (charactersWithAudio.length === 0) {
+        // Deduplicate characters by character type (e.g., both werewolf cards map to same audio)
+        const uniqueCharacterTypes = new Set();
+        const deduplicatedCharacters = charactersWithAudio.filter(charId => {
+            const characterType = this.characterAudioMap[charId];
+            if (uniqueCharacterTypes.has(characterType)) {
+                return false; // Skip duplicate character type
+            }
+            uniqueCharacterTypes.add(characterType);
+            return true;
+        });
+        
+        if (deduplicatedCharacters.length === 0) {
             console.log('No characters with audio selected');
             return;
         }
         
         // Create complete audio sequence with announcer at beginning and end
-        const completeSequence = this.createAudioSequence(charactersWithAudio);
+        const completeSequence = this.createAudioSequence(deduplicatedCharacters);
         
         // Add configurable delay before starting character audio sequence
         setTimeout(() => {
@@ -582,8 +563,8 @@ class AudioManager {
             characterName: 'Shah-Announcer'
         });
         
-        // Add character audio in specified order (use card order by default)
-        const playOrder = this.audioPlayOrder || this.getCardOrder(charactersWithAudio);
+        // Add character audio in default card order (always use default order)
+        const playOrder = this.getCardOrder(charactersWithAudio);
         playOrder.forEach(charId => {
             const characterType = this.characterAudioMap[charId];
             if (characterType && this.audioFiles[characterType]) {
@@ -602,6 +583,48 @@ class AudioManager {
                         totalLines: lineSequence.length
                     });
                 });
+                
+                // Add Doppelganger conditional lines after specific characters
+                if (charId === 'insomniac-card' && charactersWithAudio.includes('doppelganger-card')) {
+                    // Add Doppelganger line 5 after Insomniac
+                    sequence.push({
+                        type: 'doppelganger_conditional',
+                        characterId: 'doppelganger-card',
+                        characterType: 'Julia-Doppelganger',
+                        characterName: 'Julia-Doppelganger',
+                        audioFile: 'static/audio/Julia-Doppelganger/doppelganger_line_5.mp3',
+                        pauseAfter: 12000, // 12 second pause
+                        followUp: 'static/audio/Julia-Doppelganger/doppelganger_line_4.mp3'
+                    });
+                }
+                
+                if (charId === 'revealer-card' && charactersWithAudio.includes('doppelganger-card')) {
+                    // Add Doppelganger line 6 after Revealer
+                    sequence.push({
+                        type: 'doppelganger_conditional',
+                        characterId: 'doppelganger-card',
+                        characterType: 'Julia-Doppelganger',
+                        characterName: 'Julia-Doppelganger',
+                        audioFile: 'static/audio/Julia-Doppelganger/doppelganger_line_6.mp3',
+                        pauseAfter: 12000, // 12 second pause
+                        followUp: 'static/audio/Julia-Doppelganger/doppelganger_line_4.mp3'
+                    });
+                }
+                
+                if (charId === 'mortician-card' && charactersWithAudio.includes('doppelganger-card')) {
+                    // Add Doppelganger line 7 + random line after Mortician
+                    const randomLine = Math.floor(Math.random() * 4) + 8; // Random number 8, 9, 10, or 11
+                    sequence.push({
+                        type: 'doppelganger_conditional',
+                        characterId: 'doppelganger-card',
+                        characterType: 'Julia-Doppelganger',
+                        characterName: 'Julia-Doppelganger',
+                        audioFile: 'static/audio/Julia-Doppelganger/doppelganger_line_7.mp3',
+                        pauseAfter: 0, // No pause
+                        followUp: `static/audio/Julia-Doppelganger/doppelganger_line_${randomLine}.mp3`,
+                        finalFollowUp: 'static/audio/Julia-Doppelganger/doppelganger_line_4.mp3'
+                    });
+                }
             }
         });
         
@@ -642,13 +665,104 @@ class AudioManager {
                 // Set up next audio after current one finishes + pause
                 this.announcerAudio.addEventListener('ended', () => {
                     if (this.audioSequence && this.audioSequence.isPlaying) {
+                        // Check if next item is a character (announcer to character transition)
+                        const nextItem = sequence[currentIndex + 1];
+                        let characterSwitchPause = 0;
+                        
+                        if (nextItem && nextItem.type === 'character') {
+                            characterSwitchPause = 2000; // 2 second pause from announcer to character
+                        }
+                        
                         setTimeout(() => {
                             currentIndex++;
                             this.audioSequence.currentIndex = currentIndex;
                             playNextAudio();
-                        }, this.pauseDuration);
+                        }, this.pauseDuration + characterSwitchPause);
                     }
                 }, { once: true });
+                
+            } else if (currentItem.type === 'doppelganger_conditional') {
+                // Play Doppelganger conditional audio
+                this.playAudioFile(currentItem.audioFile, currentItem.characterType);
+                
+                // Set up follow-up logic with pause
+                this.characterAudio.addEventListener('ended', () => {
+                    if (this.audioSequence && this.audioSequence.isPlaying) {
+                        // Add pause if specified
+                        const pauseDuration = currentItem.pauseAfter || 0;
+                        
+                        setTimeout(() => {
+                            // Play follow-up line
+                            if (currentItem.followUp) {
+                                this.playAudioFile(currentItem.followUp, currentItem.characterType);
+                                
+                                // Check if there's a final follow-up (for Mortician case)
+                                if (currentItem.finalFollowUp) {
+                                    // Mortician case: followUp → finalFollowUp
+                                    this.characterAudio.addEventListener('ended', () => {
+                                        if (this.audioSequence && this.audioSequence.isPlaying) {
+                                            this.playAudioFile(currentItem.finalFollowUp, currentItem.characterType);
+                                            
+                                            // Wait for final follow-up to finish, then continue
+                                            this.characterAudio.addEventListener('ended', () => {
+                                                if (this.audioSequence && this.audioSequence.isPlaying) {
+                                                    // Check if next item is a different character
+                                                    const nextItem = sequence[currentIndex + 1];
+                                                    let characterSwitchPause = 0;
+                                                    
+                                                    if (nextItem && nextItem.type === 'character' && nextItem.characterType !== currentItem.characterType) {
+                                                        characterSwitchPause = 2000; // 2 second pause between different characters
+                                                    }
+                                                    
+                                                    setTimeout(() => {
+                                                        currentIndex++;
+                                                        this.audioSequence.currentIndex = currentIndex;
+                                                        playNextAudio();
+                                                    }, characterSwitchPause);
+                                                }
+                                            }, { once: true });
+                                        }
+                                    }, { once: true });
+                                } else {
+                                    // Regular case: followUp only
+                                    this.characterAudio.addEventListener('ended', () => {
+                                        if (this.audioSequence && this.audioSequence.isPlaying) {
+                                            // Check if next item is a different character
+                                            const nextItem = sequence[currentIndex + 1];
+                                            let characterSwitchPause = 0;
+                                            
+                                            if (nextItem && nextItem.type === 'character' && nextItem.characterType !== currentItem.characterType) {
+                                                characterSwitchPause = 2000; // 2 second pause between different characters
+                                            }
+                                            
+                                            setTimeout(() => {
+                                                currentIndex++;
+                                                this.audioSequence.currentIndex = currentIndex;
+                                                playNextAudio();
+                                            }, characterSwitchPause);
+                                        }
+                                    }, { once: true });
+                                }
+                            } else {
+                                // No follow-up, continue normally
+                                // Check if next item is a different character
+                                const nextItem = sequence[currentIndex + 1];
+                                let characterSwitchPause = 0;
+                                
+                                if (nextItem && nextItem.type === 'character' && nextItem.characterType !== currentItem.characterType) {
+                                    characterSwitchPause = 2000; // 2 second pause between different characters
+                                }
+                                
+                                setTimeout(() => {
+                                    currentIndex++;
+                                    this.audioSequence.currentIndex = currentIndex;
+                                    playNextAudio();
+                                }, characterSwitchPause);
+                            }
+                        }, pauseDuration);
+                    }
+                }, { once: true });
+                return; // Skip normal pause logic for Doppelganger conditional lines
                 
             } else if (currentItem.type === 'character') {
                 // Play character audio using the specific audio file
@@ -766,8 +880,12 @@ class AudioManager {
                     // Determine pause duration based on character type
                     let pauseDuration = this.pauseDuration; // Default pause
                     
+                    // For Doppelganger, add 12-second pause after line 1
+                    if (currentItem.characterType === 'Julia-Doppelganger' && currentItem.lineIndex === 1) {
+                        pauseDuration = 12000; // 12 seconds between line 1 and line 2
+                    }
                     // For characters with 2 lines, add 6-second pause between lines
-                    if (currentItem.totalLines === 2 && currentItem.lineIndex === 1) {
+                    else if (currentItem.totalLines === 2 && currentItem.lineIndex === 1) {
                         // Oracle has no pause between lines, other 2-line characters have 6-second pause
                         if (currentItem.characterType !== 'Shanzeh-Oracle') {
                             pauseDuration = 6000; // 6 seconds between line 1 and line 2
@@ -785,11 +903,19 @@ class AudioManager {
                     // Set up next audio after current one finishes + pause
                     this.characterAudio.addEventListener('ended', () => {
                         if (this.audioSequence && this.audioSequence.isPlaying) {
+                            // Check if next item is a different character
+                            const nextItem = sequence[currentIndex + 1];
+                            let characterSwitchPause = 0;
+                            
+                            if (nextItem && nextItem.type === 'character' && nextItem.characterType !== currentItem.characterType) {
+                                characterSwitchPause = 2000; // 2 second pause between different characters
+                            }
+                            
                             setTimeout(() => {
                                 currentIndex++;
                                 this.audioSequence.currentIndex = currentIndex;
                                 playNextAudio();
-                            }, pauseDuration);
+                            }, pauseDuration + characterSwitchPause);
                         }
                     }, { once: true });
                 } else {
@@ -816,7 +942,7 @@ class AudioManager {
         }
         
         this.announcerAudio = new Audio(audioFile);
-        this.announcerAudio.volume = 0.9;
+        this.announcerAudio.volume = 1.0; // Maximum volume for announcer
         
         this.announcerAudio.play().then(() => {
             console.log(`Playing ${characterName} audio: ${audioFile}`);
@@ -832,7 +958,13 @@ class AudioManager {
         }
         
         this.characterAudio = new Audio(audioFile);
-        this.characterAudio.volume = 0.8;
+        
+        // Set volume based on character type
+        if (characterType === 'Shanzeh-Oracle' || characterType === 'Julia-Doppelganger') {
+            this.characterAudio.volume = 1.0; // Maximum volume for Oracle and Doppelganger
+        } else {
+            this.characterAudio.volume = 0.8; // Standard volume for other characters
+        }
         
         this.characterAudio.play().then(() => {
             console.log(`Playing ${characterType} audio: ${audioFile}`);

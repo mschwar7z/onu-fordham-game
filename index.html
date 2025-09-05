@@ -13,6 +13,27 @@
     let timerInterval;
     let timeLeft = 0;
 
+    // Load selected characters from localStorage on page load
+    function loadSelectedCharacters() {
+        const saved = localStorage.getItem('selectedCharacters');
+        if (saved) {
+            selectedCharacters = JSON.parse(saved);
+            // Restore visual selection state
+            selectedCharacters.forEach(characterId => {
+                const card = document.getElementById(characterId);
+                if (card) {
+                    card.classList.add('selected');
+                }
+            });
+            updatePlayButton();
+        }
+    }
+
+    // Save selected characters to localStorage
+    function saveSelectedCharacters() {
+        localStorage.setItem('selectedCharacters', JSON.stringify(selectedCharacters));
+    }
+
     function toggleCharacter(card, characterName) {
         const characterId = card.getAttribute('id') || card.getAttribute('data-character') || characterName;
         
@@ -30,6 +51,9 @@
             card.classList.add('selected');
             selectedCharacters.push(characterId);
         }
+        
+        // Save the updated selection
+        saveSelectedCharacters();
         
         // Update play button text and state
         updatePlayButton();
@@ -95,8 +119,19 @@
         setTimeout(() => {
             loadingScreen.style.display = 'none';
             mainContent.style.display = 'flex';
+            // Load selected characters after the main content is shown
+            loadSelectedCharacters();
         }, 500); // Wait for fade out animation
     }
+
+    // Load selected characters when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        // If loading screen is not shown, load characters immediately
+        const loadingScreen = document.getElementById('loadingScreen');
+        if (loadingScreen.style.display !== 'block') {
+            loadSelectedCharacters();
+        }
+    });
 
     // Initialize button state and loading screen on page load
     document.addEventListener('DOMContentLoaded', function() {
