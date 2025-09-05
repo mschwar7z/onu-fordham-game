@@ -299,7 +299,8 @@ class AudioManager {
         // Set timeout to auto-hide modal after 8 seconds
         setTimeout(() => {
             if (document.body.contains(overlay)) {
-                this.oracleUserGuess = -1; // Set as wrong guess
+                // For line 2, randomly choose between line 3 or 4
+                this.oracleUserGuess = Math.random() < 0.1 ? 4 : 3;
                 document.body.removeChild(overlay);
                 callback();
             }
@@ -386,7 +387,20 @@ class AudioManager {
         // Set timeout to auto-hide modal after 8 seconds
         setTimeout(() => {
             if (document.body.contains(overlay)) {
-                this.oracleUserChoice = 'no'; // Set as no response
+                // Randomly choose between the two possible response lines
+                if (lineNumber === 5) {
+                    // Line 5: randomly choose between line 6 or 7
+                    this.oracleUserChoice = Math.random() < 0.5 ? 6 : 7;
+                } else if (lineNumber === 8) {
+                    // Line 8: randomly choose between line 9 or 14
+                    this.oracleUserChoice = Math.random() < 0.5 ? 9 : 14;
+                } else if (lineNumber === 10) {
+                    // Line 10: randomly choose between line 11 or 12
+                    this.oracleUserChoice = Math.random() < 0.5 ? 11 : 12;
+                } else {
+                    // Fallback to random yes/no
+                    this.oracleUserChoice = Math.random() < 0.5 ? 'yes' : 'no';
+                }
                 document.body.removeChild(overlay);
                 callback();
             }
@@ -410,7 +424,11 @@ class AudioManager {
     // Get Oracle follow-up line based on guess result
     getOracleFollowUpLine() {
         if (this.oracleSelectedLine === 2) {
-            // Check if user guessed correctly
+            // If oracleUserGuess is a number (3 or 4), it means timeout occurred
+            if (typeof this.oracleUserGuess === 'number' && (this.oracleUserGuess === 3 || this.oracleUserGuess === 4)) {
+                return this.oracleUserGuess; // Return the randomly selected line
+            }
+            // Otherwise, check if user guessed correctly
             const isCorrect = this.oracleUserGuess === this.oracleRandomNumber;
             return isCorrect ? 4 : 3; // Line 4 if correct, Line 3 if wrong
         }
@@ -420,13 +438,25 @@ class AudioManager {
     // Get Oracle follow-up line based on Yes/No choice
     getOracleYesNoFollowUpLine() {
         if (this.oracleSelectedLine === 5) {
-            // Line 5: Yes leads to line 8, No leads to line 7
+            // If oracleUserChoice is a number (6 or 7), it means timeout occurred
+            if (typeof this.oracleUserChoice === 'number' && (this.oracleUserChoice === 6 || this.oracleUserChoice === 7)) {
+                return this.oracleUserChoice; // Return the randomly selected line
+            }
+            // Otherwise, check user's yes/no choice
             return this.oracleUserChoice === 'yes' ? 8 : 7;
         } else if (this.oracleSelectedLine === 8) {
-            // Line 8: Yes leads to line 9, No leads to line 14
+            // If oracleUserChoice is a number (9 or 14), it means timeout occurred
+            if (typeof this.oracleUserChoice === 'number' && (this.oracleUserChoice === 9 || this.oracleUserChoice === 14)) {
+                return this.oracleUserChoice; // Return the randomly selected line
+            }
+            // Otherwise, check user's yes/no choice
             return this.oracleUserChoice === 'yes' ? 9 : 14;
         } else if (this.oracleSelectedLine === 10) {
-            // Line 10: Yes leads to line 12, No leads to line 11
+            // If oracleUserChoice is a number (11 or 12), it means timeout occurred
+            if (typeof this.oracleUserChoice === 'number' && (this.oracleUserChoice === 11 || this.oracleUserChoice === 12)) {
+                return this.oracleUserChoice; // Return the randomly selected line
+            }
+            // Otherwise, check user's yes/no choice
             return this.oracleUserChoice === 'yes' ? 12 : 11;
         }
         return null;
