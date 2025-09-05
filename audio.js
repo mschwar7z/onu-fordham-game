@@ -296,6 +296,15 @@ class AudioManager {
         const input = document.getElementById('oracleGuess');
         input.focus();
         
+        // Set timeout to auto-hide modal after 8 seconds
+        setTimeout(() => {
+            if (document.body.contains(overlay)) {
+                this.oracleUserGuess = -1; // Set as wrong guess
+                document.body.removeChild(overlay);
+                callback();
+            }
+        }, 8000);
+        
         // Handle submit
         document.getElementById('oracleSubmit').onclick = () => {
             const guess = parseInt(input.value);
@@ -373,6 +382,15 @@ class AudioManager {
         
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
+        
+        // Set timeout to auto-hide modal after 8 seconds
+        setTimeout(() => {
+            if (document.body.contains(overlay)) {
+                this.oracleUserChoice = 'no'; // Set as no response
+                document.body.removeChild(overlay);
+                callback();
+            }
+        }, 8000);
         
         // Handle Yes button
         document.getElementById('oracleYes').onclick = () => {
