@@ -83,27 +83,11 @@
         const count = selectedCharacters.length;
         
         if (count > 0) {
-            // Play audio for selected characters
-            playGameWithAudio();
+            // Save selected characters to localStorage before navigating
+            saveSelectedCharacters();
             
-            // Add selected characters to the form
-            const form = document.getElementById('gameForm');
-            
-            // Clear any existing hidden inputs
-            const existingInputs = form.querySelectorAll('input[name="selectedCharacters[]"]');
-            existingInputs.forEach(input => input.remove());
-            
-            // Add selected characters as hidden inputs
-            selectedCharacters.forEach(character => {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'selectedCharacters[]';
-                input.value = character;
-                form.appendChild(input);
-            });
-            
-            // Submit form to game.php
-            form.submit();
+            // Navigate to game.html
+            window.location.href = 'game.html';
         } else {
             // Navigate to the timer page
             window.location.href = 'timer.html';
@@ -296,9 +280,6 @@
             </div>
             
             <div class="play-button-container">
-                <form action="game.php" method="post" id="gameForm" style="display: none;">
-                    <!-- Hidden form for game submission -->
-                </form>
                 <button type="button" class="play-button" id="playButton" onclick="handleButtonClick()">
                     <span id="buttonText">Timer</span><span id="characterCount"></span>
                 </button>
