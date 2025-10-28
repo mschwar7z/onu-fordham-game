@@ -110,6 +110,29 @@ body {
     margin-top: 30px;
 }
 
+.play-button {
+    background: linear-gradient(45deg, #ff6b35, #f7931e);
+    backdrop-filter: blur(10px);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
+}
+
+.play-button:hover {
+    background: linear-gradient(45deg, #f7931e, #ff6b35);
+    border-color: rgba(255, 255, 255, 0.7);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 53, 0.6);
+}
+
 .pause-button {
     background: rgba(255, 255, 255, 0.25);
     backdrop-filter: blur(10px);

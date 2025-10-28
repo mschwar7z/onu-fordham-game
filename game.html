@@ -28,12 +28,19 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Display selected characters
             displaySelectedCharacters();
+        });
+        
+        // Start game with audio when Play button is clicked
+        function startGame() {
+            // Hide Play button, show Pause button
+            document.getElementById('playButton').style.display = 'none';
+            document.getElementById('pauseButton').style.display = 'inline-block';
             
-            // Initialize the game with selected characters
+            // Initialize and start the game with audio
             if (typeof audioManager !== 'undefined') {
                 audioManager.initializeGame();
             }
-        });
+        }
         
         // Display selected characters on the game page
         function displaySelectedCharacters() {
@@ -87,7 +94,8 @@
             
             
             <div class="button-container">
-                <button class="pause-button" onclick="toggleAudio()">Pause</button>
+                <button id="playButton" class="play-button" onclick="startGame()">Play</button>
+                <button id="pauseButton" class="pause-button" onclick="toggleAudio()" style="display: none;">Pause</button>
                 <a href="index.html#skip-loading" class="back-button">Back</a>
             </div>
         </div>

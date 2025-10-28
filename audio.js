@@ -1084,18 +1084,32 @@ class AudioManager {
     
     // Toggle audio pause/resume
     toggleAudio() {
-        const pauseButton = document.querySelector('.pause-button');
+        const pauseButton = document.getElementById('pauseButton');
         
         if (this.isAudioPaused) {
-            // Resume character audio (background music keeps running)
+            // Resume audio playback
             if (this.characterAudio) {
                 this.characterAudio.play().catch(e => console.log('Character audio play failed:', e));
+            }
+            if (this.announcerAudio) {
+                this.announcerAudio.play().catch(e => console.log('Announcer audio play failed:', e));
+            }
+            if (this.audioSequence) {
+                this.audioSequence.isPlaying = true;
             }
             pauseButton.textContent = 'Pause';
             this.isAudioPaused = false;
         } else {
-            // Pause only character audio (keep background music running)
-            this.stopCharacterAudio();
+            // Pause audio playback
+            if (this.characterAudio) {
+                this.characterAudio.pause();
+            }
+            if (this.announcerAudio) {
+                this.announcerAudio.pause();
+            }
+            if (this.audioSequence) {
+                this.audioSequence.isPlaying = false;
+            }
             pauseButton.textContent = 'Resume';
             this.isAudioPaused = true;
         }
