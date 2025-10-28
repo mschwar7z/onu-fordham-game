@@ -12,6 +12,8 @@ class AudioManager {
         this.initialDelay = 1000; // 1 second delay before character audio starts (editable)
         this.audioSequence = null; // Track current audio sequence
         this.audioPlayOrder = null; // Custom audio play order
+        this.currentAnnouncerListener = null; // Track current announcer listener
+        this.currentCharacterListener = null; // Track current character listener
         
         // Oracle interaction properties
         this.oracleSelectedLine = null;
@@ -151,8 +153,9 @@ class AudioManager {
     }
     
     loadAnnouncerAudio() {
-        this.announcerAudio = new Audio('static/audio/Shah-Announcer/shah_line_1.mp3');
-        this.announcerAudio.volume = 1.0; // Maximum volume for announcer
+        // Announcer audio is now loaded dynamically in playAnnouncerAudioFile()
+        // No need to preload
+        this.announcerAudio = null;
     }
     
     loadClickSound() {
@@ -689,6 +692,7 @@ class AudioManager {
     // Play complete audio sequence (announcer + characters + announcer)
     playCompleteAudioSequence(sequence) {
         let currentIndex = 0;
+        let isTransitioning = false; // Guard against duplicate calls
         
         // Store the sequence for potential control
         this.audioSequence = {
@@ -701,18 +705,32 @@ class AudioManager {
             if (currentIndex >= sequence.length || !this.audioSequence.isPlaying) {
                 console.log('Complete audio sequence completed');
                 this.audioSequence = null;
+                isTransitioning = false;
+                return;
+            }
+            
+            if (isTransitioning) {
+                console.log('Skipping duplicate playNextAudio call');
                 return;
             }
             
             const currentItem = sequence[currentIndex];
             
             if (currentItem.type === 'announcer') {
+                // Log for debugging
+                console.log(`[Sequence ${currentIndex}] Playing announcer: ${currentItem.audioFile}`);
+                
                 // Play announcer audio
                 this.playAnnouncerAudioFile(currentItem.audioFile, currentItem.characterName);
                 
-                // Set up next audio after current one finishes + pause
-                this.announcerAudio.addEventListener('ended', () => {
-                    if (this.audioSequence && this.audioSequence.isPlaying) {
+                // Create and store the listener
+                const announcerEndedListener = () => {
+                    console.log(`[Sequence ${currentIndex}] Announcer ended event fired, isTransitioning: ${isTransitioning}`);
+                    
+                    if (this.audioSequence && this.audioSequence.isPlaying && !isTransitioning) {
+                        isTransitioning = true;
+                        console.log(`[Sequence ${currentIndex}] Transitioning to next audio`);
+                        
                         // Check if next item is a character (announcer to character transition)
                         const nextItem = sequence[currentIndex + 1];
                         let characterSwitchPause = 0;
@@ -724,10 +742,17 @@ class AudioManager {
                         setTimeout(() => {
                             currentIndex++;
                             this.audioSequence.currentIndex = currentIndex;
+                            isTransitioning = false;
                             playNextAudio();
                         }, this.pauseDuration + characterSwitchPause);
+                    } else {
+                        console.log(`[Sequence ${currentIndex}] Skipping transition - already in progress or not playing`);
                     }
-                }, { once: true });
+                };
+                
+                // Store reference and add listener
+                this.currentAnnouncerListener = announcerEndedListener;
+                this.announcerAudio.addEventListener('ended', announcerEndedListener, { once: true });
                 
             } else if (currentItem.type === 'doppelganger_conditional') {
                 // Play Doppelganger conditional audio
@@ -948,9 +973,10 @@ class AudioManager {
                         }
                     }
                     
-                    // Set up next audio after current one finishes + pause
-                    this.characterAudio.addEventListener('ended', () => {
-                        if (this.audioSequence && this.audioSequence.isPlaying) {
+                    // Create and store the listener
+                    const characterEndedListener = () => {
+                        if (this.audioSequence && this.audioSequence.isPlaying && !isTransitioning) {
+                            isTransitioning = true;
                             // Check if next item is a different character
                             const nextItem = sequence[currentIndex + 1];
                             let characterSwitchPause = 0;
@@ -962,10 +988,15 @@ class AudioManager {
                             setTimeout(() => {
                                 currentIndex++;
                                 this.audioSequence.currentIndex = currentIndex;
+                                isTransitioning = false;
                                 playNextAudio();
                             }, pauseDuration + characterSwitchPause);
                         }
-                    }, { once: true });
+                    };
+                    
+                    // Store reference and add listener
+                    this.currentCharacterListener = characterEndedListener;
+                    this.characterAudio.addEventListener('ended', characterEndedListener, { once: true });
                 } else {
                     // If no audio file, move to next item after pause
                     if (this.audioSequence && this.audioSequence.isPlaying) {
@@ -985,8 +1016,18 @@ class AudioManager {
     
     // Play announcer audio file
     playAnnouncerAudioFile(audioFile, characterName) {
+        // Clean up old announcer audio completely
         if (this.announcerAudio) {
             this.announcerAudio.pause();
+            this.announcerAudio.currentTime = 0;
+            // Remove tracked event listener
+            if (this.currentAnnouncerListener) {
+                this.announcerAudio.removeEventListener('ended', this.currentAnnouncerListener);
+                this.currentAnnouncerListener = null;
+            }
+            // Set src to empty to stop loading and clear the audio
+            this.announcerAudio.src = '';
+            this.announcerAudio = null;
         }
         
         this.announcerAudio = new Audio(audioFile);
@@ -1001,8 +1042,18 @@ class AudioManager {
     
     // Play a specific audio file
     playAudioFile(audioFile, characterType) {
+        // Clean up old character audio completely
         if (this.characterAudio) {
             this.characterAudio.pause();
+            this.characterAudio.currentTime = 0;
+            // Remove tracked event listener
+            if (this.currentCharacterListener) {
+                this.characterAudio.removeEventListener('ended', this.currentCharacterListener);
+                this.currentCharacterListener = null;
+            }
+            // Set src to empty to stop loading and clear the audio
+            this.characterAudio.src = '';
+            this.characterAudio = null;
         }
         
         this.characterAudio = new Audio(audioFile);
