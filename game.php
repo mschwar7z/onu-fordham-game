@@ -53,11 +53,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
                 
-                <div class="game-info">
-                    <h2>Game Status</h2>
-                    <p>Background music and character audio are playing automatically.</p>
-                    <p>You can add more game content here.</p>
-                </div>
                 
                 <div class="button-container">
                     <button class="pause-button" onclick="toggleAudio()">Pause</button>
