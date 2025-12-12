@@ -2,10 +2,34 @@ let timerInterval;
 let timeLeft = 0;
 let isRunning = false;
 let selectedDigitIndex = 0; // Currently selected digit for keyboard navigation
+let alarmSound = null;
 
 // Digit values: [minutes tens, minutes ones, seconds tens, seconds ones]
 let digits = [0, 5, 0, 0];
 const maxValues = [5, 9, 5, 9]; // Max for each digit position
+
+// Initialize alarm sound
+function initAlarmSound() {
+    alarmSound = new Audio('static/audio/background-music.mp3');
+    alarmSound.loop = true; // Loop the alarm until stopped
+    alarmSound.volume = 1.0;
+}
+
+function playAlarm() {
+    if (alarmSound) {
+        alarmSound.currentTime = 0;
+        alarmSound.play().catch(err => {
+            console.log('Could not play alarm:', err);
+        });
+    }
+}
+
+function stopAlarm() {
+    if (alarmSound) {
+        alarmSound.pause();
+        alarmSound.currentTime = 0;
+    }
+}
 
 function adjustDigit(index, delta) {
     const max = maxValues[index];
@@ -116,6 +140,9 @@ function showVoteMessage() {
     timerDisplay.style.fontSize = '4rem';
     timerDisplay.style.fontWeight = 'bold';
     timerDisplay.classList.add('vote-pulse');
+    
+    // Play alarm sound
+    playAlarm();
 }
 
 function updateTimerDisplay() {
@@ -127,6 +154,7 @@ function updateTimerDisplay() {
 
 function stopTimer() {
     clearInterval(timerInterval);
+    stopAlarm();
     // Go back to the main page
     window.location.href = 'index.html';
 }
@@ -153,6 +181,9 @@ function resetToSetup() {
 
 // Initialize all event handlers
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize alarm sound
+    initAlarmSound();
+    
     const columns = document.querySelectorAll('.digit-column');
     
     // Select first digit by default
