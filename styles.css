@@ -404,11 +404,10 @@ body {
     font-weight: bold;
     font-family: 'Orbitron', monospace;
     margin-bottom: 10px;
-    background: rgba(0, 0, 0, 0.7);
+    background: transparent;
     padding: 20px 40px;
     border-radius: 20px;
-    backdrop-filter: blur(10px);
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    border: none;
 }
 
 .timer-controls {
