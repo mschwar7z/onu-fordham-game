@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ONU Fordham Game</title>
     <link rel="stylesheet" href="game-styles.css">
-    <script src="audio.js"></script>
+    <script src="audio-v2.js"></script>
     <script>
         // Get selected characters from localStorage
         function getSelectedCharacters() {
@@ -36,9 +36,9 @@
             document.getElementById('playButton').style.display = 'none';
             document.getElementById('pauseButton').style.display = 'inline-block';
             
-            // Initialize and start the game with audio
+            // Start the game with audio using the new AudioManager
             if (typeof audioManager !== 'undefined') {
-                audioManager.initializeGame();
+                audioManager.startGame(window.selectedCharacters);
             }
         }
         
@@ -64,19 +64,6 @@
     <div class="background-container">
         <img src="static/images/backgrounds/background.png" alt="Background" class="background-image">
     </div>
-    
-    <!-- Hidden audio elements for background audio -->
-    <audio id="mainAudio" loop>
-        <source src="static/audio/background-music.mp3" type="audio/mpeg">
-    </audio>
-    
-    <audio id="ambientAudio" loop>
-        <source src="static/audio/ambient-sounds.mp3" type="audio/mpeg">
-    </audio>
-    
-    <audio id="sfxAudio">
-        <source src="static/audio/sound-effects.mp3" type="audio/mpeg">
-    </audio>
     
     <div class="container">
         <!-- Logo Section -->

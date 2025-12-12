@@ -140,16 +140,49 @@ class AudioManager {
             console.warn('Web Audio API not supported');
         }
         
+        // Detect if on mobile device
+        this.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        console.log('Is Mobile:', this.isMobile);
+        
+        // Store original background music volume for ducking
+        this.originalBgMusicVolume = this.isMobile ? 0.02 : 0.1;
+        this.duckedBgMusicVolume = this.isMobile ? 0.005 : 0.03;
+        
         // Load background music, announcer, and click sound
         this.loadBackgroundMusic();
         this.loadAnnouncerAudio();
         this.loadClickSound();
     }
     
+    // Duck (lower) background music when voices play
+    duckBackgroundMusic() {
+        if (this.backgroundMusic && this.isMobile) {
+            console.log('Ducking background music from', this.backgroundMusic.volume, 'to', this.duckedBgMusicVolume);
+            this.backgroundMusic.volume = this.duckedBgMusicVolume;
+        }
+    }
+    
+    // Restore background music volume
+    restoreBackgroundMusic() {
+        if (this.backgroundMusic && this.isMobile) {
+            console.log('Restoring background music to', this.originalBgMusicVolume);
+            this.backgroundMusic.volume = this.originalBgMusicVolume;
+        }
+    }
+    
     loadBackgroundMusic() {
         this.backgroundMusic = new Audio('static/audio/background-music.mp3');
         this.backgroundMusic.loop = true;
-        this.backgroundMusic.volume = 0.1; // Much quieter background music
+        
+        // Mobile gets much quieter background music to not drown out voices
+        if (this.isMobile) {
+            this.backgroundMusic.volume = 0.02; // Very quiet on mobile (2%)
+            this.backgroundMusic.preload = 'auto';
+        } else {
+            this.backgroundMusic.volume = 0.1; // Normal volume on desktop (10%)
+        }
+        
+        console.log('Background music volume set to:', this.backgroundMusic.volume);
     }
     
     loadAnnouncerAudio() {
@@ -718,18 +751,15 @@ class AudioManager {
             
             if (currentItem.type === 'announcer') {
                 // Log for debugging
-                console.log(`[Sequence ${currentIndex}] Playing announcer: ${currentItem.audioFile}`);
+                console.log(`[SEQUENCE ${currentIndex}] ====== Playing announcer: ${currentItem.audioFile} ======`);
                 
-                // Play announcer audio
-                this.playAnnouncerAudioFile(currentItem.audioFile, currentItem.characterName);
-                
-                // Create and store the listener
+                // Create and store the listener BEFORE playing (critical for mobile!)
                 const announcerEndedListener = () => {
-                    console.log(`[Sequence ${currentIndex}] Announcer ended event fired, isTransitioning: ${isTransitioning}`);
+                    console.log(`[SEQUENCE ${currentIndex}] Announcer 'ended' event FIRED, isTransitioning: ${isTransitioning}`);
                     
                     if (this.audioSequence && this.audioSequence.isPlaying && !isTransitioning) {
                         isTransitioning = true;
-                        console.log(`[Sequence ${currentIndex}] Transitioning to next audio`);
+                        console.log(`[SEQUENCE ${currentIndex}] Transitioning to next audio`);
                         
                         // Check if next item is a character (announcer to character transition)
                         const nextItem = sequence[currentIndex + 1];
@@ -737,22 +767,25 @@ class AudioManager {
                         
                         if (nextItem && nextItem.type === 'character') {
                             characterSwitchPause = 2000; // 2 second pause from announcer to character
+                            console.log(`[SEQUENCE] Next is character, adding ${characterSwitchPause}ms pause`);
                         }
                         
+                        console.log(`[SEQUENCE] Waiting ${this.pauseDuration + characterSwitchPause}ms before next audio`);
                         setTimeout(() => {
                             currentIndex++;
                             this.audioSequence.currentIndex = currentIndex;
                             isTransitioning = false;
+                            console.log(`[SEQUENCE] Moving to index ${currentIndex}`);
                             playNextAudio();
                         }, this.pauseDuration + characterSwitchPause);
                     } else {
-                        console.log(`[Sequence ${currentIndex}] Skipping transition - already in progress or not playing`);
+                        console.log(`[SEQUENCE ${currentIndex}] Skipping transition - isPlaying: ${this.audioSequence?.isPlaying}, isTransitioning: ${isTransitioning}`);
                     }
                 };
                 
-                // Store reference and add listener
-                this.currentAnnouncerListener = announcerEndedListener;
-                this.announcerAudio.addEventListener('ended', announcerEndedListener, { once: true });
+                // Pass the listener to be added before playback
+                console.log(`[SEQUENCE ${currentIndex}] Calling playAnnouncerAudioFile with callback`);
+                this.playAnnouncerAudioFile(currentItem.audioFile, currentItem.characterName, announcerEndedListener);
                 
             } else if (currentItem.type === 'doppelganger_conditional') {
                 // Play Doppelganger conditional audio
@@ -1015,7 +1048,9 @@ class AudioManager {
     }
     
     // Play announcer audio file
-    playAnnouncerAudioFile(audioFile, characterName) {
+    playAnnouncerAudioFile(audioFile, characterName, onEndedCallback = null) {
+        console.log('[playAnnouncerAudioFile] Called with:', audioFile, 'Has callback:', !!onEndedCallback);
+        
         // Clean up old announcer audio completely
         if (this.announcerAudio) {
             this.announcerAudio.pause();
@@ -1033,15 +1068,53 @@ class AudioManager {
         this.announcerAudio = new Audio(audioFile);
         this.announcerAudio.volume = 1.0; // Maximum volume for announcer
         
-        this.announcerAudio.play().then(() => {
-            console.log(`Playing ${characterName} audio: ${audioFile}`);
-        }).catch(e => {
-            console.log('Announcer audio play failed:', e);
-        });
+        // Add the callback listener FIRST (before any other listeners)
+        if (onEndedCallback) {
+            console.log('[playAnnouncerAudioFile] Adding callback listener BEFORE playback');
+            this.currentAnnouncerListener = onEndedCallback;
+            this.announcerAudio.addEventListener('ended', onEndedCallback, { once: true });
+        }
+        
+        // Mobile-specific settings
+        if (this.isMobile) {
+            console.log('[MOBILE] Announcer audio - setting max volume and ducking background');
+            this.announcerAudio.volume = 1.0;
+            this.announcerAudio.preload = 'auto';
+            this.announcerAudio.setAttribute('playsinline', '');
+            this.announcerAudio.setAttribute('webkit-playsinline', '');
+            this.duckBackgroundMusic();
+            
+            // Restore background music when announcer finishes (separate listener)
+            this.announcerAudio.addEventListener('ended', () => {
+                console.log('[MOBILE] Announcer ended, restoring background music');
+                this.restoreBackgroundMusic();
+            }, { once: true });
+        }
+        
+        // Resume audio context if suspended (critical for mobile)
+        if (this.audioContext && this.audioContext.state === 'suspended') {
+            console.log('[AudioContext] Resuming suspended audio context');
+            this.audioContext.resume().then(() => {
+                console.log('[AudioContext] Resumed successfully');
+                return this.announcerAudio.play();
+            }).then(() => {
+                console.log(`[SUCCESS] Playing ${characterName} audio: ${audioFile} at volume ${this.announcerAudio.volume}`);
+            }).catch(e => {
+                console.error('[ERROR] Announcer audio play failed:', e);
+            });
+        } else {
+            this.announcerAudio.play().then(() => {
+                console.log(`[SUCCESS] Playing ${characterName} audio: ${audioFile} at volume ${this.announcerAudio.volume}`);
+            }).catch(e => {
+                console.error('[ERROR] Announcer audio play failed:', e);
+            });
+        }
     }
     
     // Play a specific audio file
-    playAudioFile(audioFile, characterType) {
+    playAudioFile(audioFile, characterType, onEndedCallback = null) {
+        console.log('[playAudioFile] Called with:', audioFile, characterType, 'Has callback:', !!onEndedCallback);
+        
         // Clean up old character audio completely
         if (this.characterAudio) {
             this.characterAudio.pause();
@@ -1058,18 +1131,55 @@ class AudioManager {
         
         this.characterAudio = new Audio(audioFile);
         
-        // Set volume based on character type
-        if (characterType === 'Shanzeh-Oracle' || characterType === 'Julia-Doppelganger') {
-            this.characterAudio.volume = 1.0; // Maximum volume for Oracle and Doppelganger
-        } else {
-            this.characterAudio.volume = 0.8; // Standard volume for other characters
+        // Add the callback listener FIRST (before any other listeners)
+        if (onEndedCallback) {
+            console.log('[playAudioFile] Adding callback listener BEFORE playback');
+            this.currentCharacterListener = onEndedCallback;
+            this.characterAudio.addEventListener('ended', onEndedCallback, { once: true });
         }
         
-        this.characterAudio.play().then(() => {
-            console.log(`Playing ${characterType} audio: ${audioFile}`);
-        }).catch(e => {
-            console.log('Character audio play failed:', e);
-        });
+        // Set volume based on platform and character type
+        if (this.isMobile) {
+            // Mobile: ALL character voices at maximum volume
+            console.log('[MOBILE] Character audio - setting max volume and ducking background');
+            this.characterAudio.volume = 1.0;
+            this.characterAudio.preload = 'auto';
+            this.characterAudio.setAttribute('playsinline', '');
+            this.characterAudio.setAttribute('webkit-playsinline', '');
+            this.duckBackgroundMusic();
+            
+            // Restore background music when character finishes (separate listener)
+            this.characterAudio.addEventListener('ended', () => {
+                console.log('[MOBILE] Character audio ended, restoring background music');
+                this.restoreBackgroundMusic();
+            }, { once: true });
+        } else {
+            // Desktop: Normal volume settings
+            if (characterType === 'Shanzeh-Oracle' || characterType === 'Julia-Doppelganger') {
+                this.characterAudio.volume = 1.0; // Maximum volume for Oracle and Doppelganger
+            } else {
+                this.characterAudio.volume = 0.8; // Standard volume for other characters
+            }
+        }
+        
+        // Resume audio context if suspended (critical for mobile)
+        if (this.audioContext && this.audioContext.state === 'suspended') {
+            console.log('[AudioContext] Resuming suspended audio context');
+            this.audioContext.resume().then(() => {
+                console.log('[AudioContext] Resumed successfully');
+                return this.characterAudio.play();
+            }).then(() => {
+                console.log(`[SUCCESS] Playing ${characterType} audio: ${audioFile} at volume ${this.characterAudio.volume}`);
+            }).catch(e => {
+                console.error('[ERROR] Character audio play failed:', e);
+            });
+        } else {
+            this.characterAudio.play().then(() => {
+                console.log(`[SUCCESS] Playing ${characterType} audio: ${audioFile} at volume ${this.characterAudio.volume}`);
+            }).catch(e => {
+                console.error('[ERROR] Character audio play failed:', e);
+            });
+        }
     }
     
     // Stop all audio
