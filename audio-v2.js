@@ -24,9 +24,9 @@ class AudioManager {
         // Mobile detection
         this.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         
-        // Volume settings
-        this.bgMusicVolume = this.isMobile ? 0.02 : 0.1;
-        this.duckedBgMusicVolume = this.isMobile ? 0.005 : 0.03;
+        // Volume settings (mobile has lower background music so character voices are clearer)
+        this.bgMusicVolume = this.isMobile ? 0.008 : 0.1;
+        this.duckedBgMusicVolume = this.isMobile ? 0.001 : 0.03;
         this.characterVolume = this.isMobile ? 1.0 : 0.8;
         this.announcerVolume = 1.0;
         
