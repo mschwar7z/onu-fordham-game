@@ -9,8 +9,9 @@ let digits = [0, 5, 0, 0];
 const maxValues = [5, 9, 5, 9]; // Max for each digit position
 
 // Initialize alarm sound
+const AUDIO_BASE_URL = 'https://onu-fordham-audio.s3.us-east-2.amazonaws.com/audio/';
 function initAlarmSound() {
-    alarmSound = new Audio('static/audio/background-music.mp3');
+    alarmSound = new Audio(AUDIO_BASE_URL + 'background-music.mp3');
     alarmSound.loop = true; // Loop the alarm until stopped
     alarmSound.volume = 1.0;
 }
