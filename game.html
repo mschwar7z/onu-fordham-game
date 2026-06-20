@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ONU Fordham Game</title>
+    <link rel="stylesheet" href="game-styles.css">
+    <script src="audio-v2.js"></script>
+    <script>
+        // Get selected characters from localStorage
+        function getSelectedCharacters() {
+            const saved = localStorage.getItem('selectedCharacters');
+            if (saved) {
+                return JSON.parse(saved);
+            }
+            return [];
+        }
+        
+        // Save selected characters to localStorage
+        function saveSelectedCharacters(characters) {
+            localStorage.setItem('selectedCharacters', JSON.stringify(characters));
+        }
+        
+        // Make selected characters globally available (matching PHP behavior)
+        window.selectedCharacters = getSelectedCharacters();
+        
+        // Initialize game when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Display selected characters
+            displaySelectedCharacters();
+        });
+        
+        // Start game with audio when Play button is clicked
+        function startGame() {
+            // Hide Play button, show Pause button
+            document.getElementById('playButton').style.display = 'none';
+            document.getElementById('pauseButton').style.display = 'inline-block';
+            
+            // Start the game with audio using the new AudioManager
+            if (typeof audioManager !== 'undefined') {
+                audioManager.startGame(window.selectedCharacters);
+            }
+        }
+        
+        // Display selected characters on the game page
+        function displaySelectedCharacters() {
+            const container = document.getElementById('selectedCharactersList');
+            if (!container) return;
+            
+            if (window.selectedCharacters && window.selectedCharacters.length > 0) {
+                const characterList = window.selectedCharacters.map(char => {
+                    // Convert character ID to display name
+                    const displayName = char.replace('-card', '').replace(/([A-Z])/g, ' $1').trim();
+                    return `<div class="character-item">${displayName}</div>`;
+                }).join('');
+                container.innerHTML = characterList;
+            } else {
+                container.innerHTML = '<p>No characters selected</p>';
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="background-container">
+        <img src="static/images/backgrounds/background.png" alt="Background" class="background-image">
+    </div>
+    
+    <div class="container">
+        <!-- Logo Section -->
+        <div class="logo-container">
+            <img src="static/images/backgrounds/logo.png" alt="Logo" class="logo-image">
+        </div>
+        
+        <div class="content">
+            <div class="game-info">
+                <h2>Selected Characters</h2>
+                <div id="selectedCharactersList">
+                    <!-- Selected characters will be displayed here -->
+                </div>
+            </div>
+            
+            
+            <div class="button-container">
+                <button id="playButton" class="play-button" onclick="startGame()">Play</button>
+                <button id="pauseButton" class="pause-button" onclick="toggleAudio()" style="display: none;">Pause</button>
+                <a href="index.html#skip-loading" class="back-button">Back</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

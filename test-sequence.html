@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Sequence Test</title>
+    <script src="audio-v2.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        h1 {
+            color: #ff6b35;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        h2 {
+            color: #ffd700;
+            margin: 20px 0 10px;
+            font-size: 1.2em;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .test-section {
+            background: #16213e;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        button {
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
+        }
+        
+        button.secondary {
+            background: #4a5568;
+        }
+        
+        button.secondary:hover {
+            background: #5a6578;
+            box-shadow: 0 4px 15px rgba(74, 85, 104, 0.4);
+        }
+        
+        #output {
+            background: #0f0f23;
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 300px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            overflow-x: auto;
+        }
+        
+        .sequence-item {
+            padding: 8px 12px;
+            margin: 4px 0;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .sequence-item .index {
+            background: #333;
+            padding: 2px 8px;
+            border-radius: 3px;
+            min-width: 30px;
+            text-align: center;
+        }
+        
+        .sequence-item .type {
+            font-weight: bold;
+            min-width: 120px;
+        }
+        
+        .sequence-item .file {
+            flex: 1;
+            color: #aaa;
+        }
+        
+        .sequence-item .pause {
+            color: #888;
+            font-style: italic;
+        }
+        
+        .sequence-item .interactive {
+            background: #9f7aea;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+        
+        .type-announcer {
+            background: #2d3748;
+            border-left: 4px solid #4299e1;
+        }
+        
+        .type-announcer .type {
+            color: #4299e1;
+        }
+        
+        .type-character {
+            background: #2d3748;
+            border-left: 4px solid #48bb78;
+        }
+        
+        .type-character .type {
+            color: #48bb78;
+        }
+        
+        .type-doppelganger_conditional {
+            background: #3d2d48;
+            border-left: 4px solid #ed64a6;
+        }
+        
+        .type-doppelganger_conditional .type {
+            color: #ed64a6;
+        }
+        
+        .selected-chars {
+            background: #2d3748;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .selected-chars span {
+            display: inline-block;
+            background: #4a5568;
+            padding: 4px 10px;
+            border-radius: 3px;
+            margin: 2px 4px 2px 0;
+            font-size: 12px;
+        }
+        
+        .summary {
+            background: #1a365d;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            font-size: 13px;
+        }
+        
+        .summary strong {
+            color: #63b3ed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Audio Sequence Test</h1>
+        
+        <div class="test-section">
+            <h2>Doppelganger Tests</h2>
+            <div class="button-group">
+                <button onclick="testDoppelgangerOnly()">Doppelganger Only</button>
+                <button onclick="testDoppelgangerInsomniac()">Doppelganger + Insomniac</button>
+                <button onclick="testDoppelgangerRevealer()">Doppelganger + Revealer</button>
+                <button onclick="testDoppelgangerMortician()">Doppelganger + Mortician</button>
+                <button onclick="testDoppelgangerAll()">Doppelganger + All Three</button>
+            </div>
+            
+            <h2>Mortician Tests</h2>
+            <div class="button-group">
+                <button onclick="testMorticianOnly()">Mortician Only</button>
+            </div>
+            
+            <h2>Oracle Tests</h2>
+            <div class="button-group">
+                <button onclick="testOracleOnly()">Oracle Only</button>
+            </div>
+            
+            <h2>Custom Test</h2>
+            <div class="button-group">
+                <button onclick="testCustom()">Run Custom Selection</button>
+                <button class="secondary" onclick="clearOutput()">Clear Output</button>
+            </div>
+            <div style="margin-top: 10px;">
+                <label style="display: block; margin-bottom: 5px; color: #aaa;">Select characters:</label>
+                <div id="characterCheckboxes" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                    <!-- Will be populated by JS -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Sequence Output</h2>
+            <div id="output">
+                <p style="color: #666;">Click a test button to see the audio sequence...</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // All available characters
+        const allCharacters = [
+            'oracle-card',
+            'doppelganger-card',
+            'werewolf1-card',
+            'werewolf2-card',
+            'minion-card',
+            'seer-card',
+            'robber-card',
+            'troublemaker-card',
+            'drunk-card',
+            'insomniac-card',
+            'revealer-card',
+            'mortician-card'
+        ];
+        
+        // Create checkboxes
+        function createCheckboxes() {
+            const container = document.getElementById('characterCheckboxes');
+            container.innerHTML = allCharacters.map(char => {
+                const name = char.replace('-card', '').replace(/(\d)/, ' $1');
+                return `
+                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                        <input type="checkbox" value="${char}" style="cursor: pointer;">
+                        <span>${name}</span>
+                    </label>
+                `;
+            }).join('');
+        }
+        
+        // Get selected characters from checkboxes
+        function getSelectedCharacters() {
+            const checkboxes = document.querySelectorAll('#characterCheckboxes input:checked');
+            return Array.from(checkboxes).map(cb => cb.value);
+        }
+        
+        // Display sequence
+        function displaySequence(characters, title) {
+            const output = document.getElementById('output');
+            const sequence = audioManager.buildSequence(characters);
+            
+            let html = `<div class="selected-chars"><strong>Test: ${title}</strong><br>`;
+            html += characters.map(c => `<span>${c.replace('-card', '')}</span>`).join('');
+            html += '</div>';
+            
+            if (sequence.length === 0) {
+                html += '<p style="color: #f56565;">No sequence generated (no characters with audio selected)</p>';
+            } else {
+                sequence.forEach((item, i) => {
+                    const typeClass = `type-${item.type}`;
+                    const fileName = item.file ? item.file.split('/').pop() : 'N/A';
+                    const pauseText = item.pauseAfter > 0 ? `pause: ${item.pauseAfter}ms` : '';
+                    const interactiveTag = item.isInteractive ? 
+                        `<span class="interactive">${item.interactionType === 'number' ? 'NUMBER GUESS' : 'YES/NO'}</span>` : '';
+                    
+                    html += `
+                        <div class="sequence-item ${typeClass}">
+                            <span class="index">${i + 1}</span>
+                            <span class="type">${item.type}</span>
+                            <span class="file">${fileName}</span>
+                            ${interactiveTag}
+                            <span class="pause">${pauseText}</span>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                    <div class="summary">
+                        <strong>Total items:</strong> ${sequence.length} | 
+                        <strong>Announcers:</strong> ${sequence.filter(s => s.type === 'announcer').length} | 
+                        <strong>Characters:</strong> ${sequence.filter(s => s.type === 'character').length} | 
+                        <strong>Doppel Conditionals:</strong> ${sequence.filter(s => s.type === 'doppelganger_conditional').length}
+                    </div>
+                `;
+            }
+            
+            output.innerHTML = html;
+            
+            // Also log to console for detailed view
+            console.log(`\n=== ${title} ===`);
+            console.log('Selected:', characters);
+            console.table(sequence.map((s, i) => ({
+                '#': i + 1,
+                type: s.type,
+                file: s.file?.split('/').pop(),
+                pause: s.pauseAfter,
+                interactive: s.isInteractive ? s.interactionType : ''
+            })));
+        }
+        
+        // Test functions
+        function testDoppelgangerOnly() {
+            displaySequence(['doppelganger-card'], 'Doppelganger Only');
+        }
+        
+        function testDoppelgangerInsomniac() {
+            displaySequence(['doppelganger-card', 'insomniac-card'], 'Doppelganger + Insomniac');
+        }
+        
+        function testDoppelgangerRevealer() {
+            displaySequence(['doppelganger-card', 'revealer-card'], 'Doppelganger + Revealer');
+        }
+        
+        function testDoppelgangerMortician() {
+            displaySequence(['doppelganger-card', 'mortician-card'], 'Doppelganger + Mortician');
+        }
+        
+        function testDoppelgangerAll() {
+            displaySequence(['doppelganger-card', 'insomniac-card', 'revealer-card', 'mortician-card'], 'Doppelganger + All Three');
+        }
+        
+        function testMorticianOnly() {
+            displaySequence(['mortician-card'], 'Mortician Only');
+        }
+        
+        function testOracleOnly() {
+            displaySequence(['oracle-card'], 'Oracle Only');
+        }
+        
+        function testCustom() {
+            const selected = getSelectedCharacters();
+            if (selected.length === 0) {
+                alert('Please select at least one character');
+                return;
+            }
+            displaySequence(selected, 'Custom Selection');
+        }
+        
+        function clearOutput() {
+            document.getElementById('output').innerHTML = '<p style="color: #666;">Click a test button to see the audio sequence...</p>';
+        }
+        
+        // Initialize
+        createCheckboxes();
+    </script>
+</body>
+</html>
+

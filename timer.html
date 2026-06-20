@@ -22,14 +22,50 @@
             <!-- Timer Section -->
             <div class="timer-container">
                 <div class="timer-header">
-                    <h1 class="timer-title">TIME</h1>
-                    <p class="timer-subtitle">REMAINING BEFORE VOTE</p>
+                    <h1 class="timer-title">SET TIME</h1>
+                    <p class="timer-subtitle desktop-hint">USE ARROW KEYS OR SCROLL</p>
+                    <p class="timer-subtitle mobile-hint">SWIPE UP/DOWN TO ADJUST</p>
                 </div>
                 
-                <div class="timer-display" id="timerDisplay">05:00</div>
+                <!-- Time Picker -->
+                <div class="time-picker" id="timePicker">
+                    <div class="digit-column" data-digit="0" data-max="5">
+                        <div class="digit-arrow up" onclick="adjustDigit(0, 1)">▲</div>
+                        <div class="digit-scroll-container">
+                            <div class="digit-value">0</div>
+                        </div>
+                        <div class="digit-arrow down" onclick="adjustDigit(0, -1)">▼</div>
+                    </div>
+                    <div class="digit-column" data-digit="1" data-max="9">
+                        <div class="digit-arrow up" onclick="adjustDigit(1, 1)">▲</div>
+                        <div class="digit-scroll-container">
+                            <div class="digit-value">5</div>
+                        </div>
+                        <div class="digit-arrow down" onclick="adjustDigit(1, -1)">▼</div>
+                    </div>
+                    <div class="digit-separator">:</div>
+                    <div class="digit-column" data-digit="2" data-max="5">
+                        <div class="digit-arrow up" onclick="adjustDigit(2, 1)">▲</div>
+                        <div class="digit-scroll-container">
+                            <div class="digit-value">0</div>
+                        </div>
+                        <div class="digit-arrow down" onclick="adjustDigit(2, -1)">▼</div>
+                    </div>
+                    <div class="digit-column" data-digit="3" data-max="9">
+                        <div class="digit-arrow up" onclick="adjustDigit(3, 1)">▲</div>
+                        <div class="digit-scroll-container">
+                            <div class="digit-value">0</div>
+                        </div>
+                        <div class="digit-arrow down" onclick="adjustDigit(3, -1)">▼</div>
+                    </div>
+                </div>
+                
+                <!-- Running Timer Display (hidden initially) -->
+                <div class="timer-display" id="timerDisplay" style="display: none;">05:00</div>
                 
                 <div class="timer-controls">
-                    <button class="timer-button" onclick="stopTimer()">Stop</button>
+                    <button class="timer-button start-btn" id="startBtn" onclick="startTimer()">Start</button>
+                    <button class="timer-button stop-btn" id="stopBtn" onclick="stopTimer()">Stop</button>
                 </div>
             </div>
         </div>
