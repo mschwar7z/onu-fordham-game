@@ -174,6 +174,33 @@ class AudioManager {
         }
     }
     
+    // ==================== Volume Setters (for Settings) ====================
+    
+    /**
+     * Set character audio volume
+     * @param {number} volume - Volume level (0-1)
+     */
+    setCharacterVolume(volume) {
+        this.characterVolume = Math.max(0, Math.min(1, volume));
+        console.log('[AudioManager] Character volume set to:', this.characterVolume);
+    }
+    
+    /**
+     * Set background music volume
+     * @param {number} volume - Volume level (0-1)
+     */
+    setBackgroundMusicVolume(volume) {
+        this.bgMusicVolume = Math.max(0, Math.min(1, volume));
+        // Also update the ducked volume proportionally
+        this.duckedBgMusicVolume = this.bgMusicVolume * 0.3;
+        
+        // Apply immediately if background music is playing
+        if (this.backgroundMusic) {
+            this.backgroundMusic.volume = this.bgMusicVolume;
+        }
+        console.log('[AudioManager] Background music volume set to:', this.bgMusicVolume);
+    }
+    
     // ==================== Click Sound ====================
     
     loadClickSound() {
@@ -227,7 +254,8 @@ class AudioManager {
             
             // Mobile-specific settings
             if (this.isMobile) {
-                this.currentAudio.volume = 1.0; // Max volume on mobile
+                // Use characterVolume from settings (defaults to 1.0 on mobile)
+                this.currentAudio.volume = this.characterVolume;
                 this.currentAudio.preload = 'auto';
                 this.currentAudio.setAttribute('playsinline', '');
                 this.currentAudio.setAttribute('webkit-playsinline', '');

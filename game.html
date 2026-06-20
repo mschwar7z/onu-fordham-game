@@ -6,6 +6,7 @@
     <title>ONU Fordham Game</title>
     <link rel="stylesheet" href="game-styles.css">
     <script src="audio-v2.js"></script>
+    <script src="settings.js"></script>
     <script>
         // Get selected characters from localStorage
         function getSelectedCharacters() {
@@ -35,6 +36,11 @@
             // Hide Play button, show Pause button
             document.getElementById('playButton').style.display = 'none';
             document.getElementById('pauseButton').style.display = 'inline-block';
+            
+            // Apply saved settings before starting
+            if (typeof applySettings === 'function') {
+                applySettings();
+            }
             
             // Start the game with audio using the new AudioManager
             if (typeof audioManager !== 'undefined') {
